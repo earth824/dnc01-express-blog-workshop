@@ -1,0 +1,8 @@
+- Create new project: mkdir [project-name] or use GUI
+- Init nodejs project: pnpm init
+- Add dependency: pnpm add -D typescript tsx
+- Init typescript config: pnpm tsc --init
+- Create app.ts
+- Install express: pnpm add express
+- Install declaration file for library: pnpm add -D @types/express @types/node
+- Install dotenv to load environment varaible: pnpm add dotenv
