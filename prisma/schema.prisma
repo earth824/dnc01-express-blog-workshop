@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/db/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  admin
+  user
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+  role     Role   @default(user)
+  blogs    Blog[]
+}
+
+model Blog {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  content   String
+  status    Boolean   @default(true)
+  createdAt DateTime  @default(now()) @db.Timestamptz(0)
+  updateAt  DateTime  @updatedAt @db.Timestamptz(0)
+  deletedAt DateTime? @db.Timestamptz(0)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

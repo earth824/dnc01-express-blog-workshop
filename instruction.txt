@@ -6,3 +6,9 @@
 - Install express: pnpm add express
 - Install declaration file for library: pnpm add -D @types/express @types/node
 - Install dotenv to load environment varaible: pnpm add dotenv
+- Create routes folder and route file based on API ENDPOINT
+- Apply express.json() middleware
+- Apply error and not found middleware
+- Init Database using prisma: pnpm add -D prisma
+- Init prisma schema: pnpm prisma init
+- Install prisma client: pnpm add @prisma/client @prisma/adapter-pg pg
