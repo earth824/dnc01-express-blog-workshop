@@ -2,6 +2,8 @@ import type { Response, Request } from 'express';
 import { prisma } from '../db/prisma.js';
 import z from 'zod';
 import { PrismaClientKnownRequestError } from '../db/generated/prisma/internal/prismaNamespace.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 const registerSchema = z.object({
   username: z
@@ -26,7 +28,7 @@ const registerSchema = z.object({
 
 async function register(req: Request, res: Response) {
   const data = registerSchema.parse(req.body);
-
+  data.password = await bcrypt.hash(data.password, 12);
   // find user in user table with provided username
   // if user exits (username already in use)
   // if not exist insert new user
@@ -65,17 +67,23 @@ async function login(req: Request, res: Response) {
 
   const user = await prisma.user.findUnique({
     where: { username }
-  });
+  }); // { id, username, password, role }
 
   if (!user) {
     return res.status(401).json({ message: 'invalid username or password' });
   }
 
-  if (user.password !== password) {
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
     return res.status(401).json({ message: 'invalid username or password' });
   }
 
-  res.status(200).json({ message: 'user logged in successfully' });
+  // SIGN TOKEN// PAYLOAD: { sub: user id, username, role  } // EXPIRED 24 hour // SECRET(random) ==> PUT IN .env
+  const payload = { sub: user.id, username: user.username, role: user.role };
+  const secretKey = process.env.JWT_SECRET ?? 'qwertyuioplkjhgfdsazxcvbnm';
+  const token = jwt.sign(payload, secretKey, { expiresIn: 24 * 60 * 60 });
+
+  res.status(200).json({ token });
 }
 
 export const authController = { register, login };
