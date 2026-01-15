@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import { HttpException } from '../exceptions/http.exception.js';
 import { InvalidCredentialsException } from '../exceptions/invalid-credentials.exception.js';
 import { UsernameExistException } from '../exceptions/username-exist.exception.js';
+import { env } from '../config/env.config.js';
 
 const registerSchema = z.object({
   username: z
@@ -87,7 +88,7 @@ async function login(req: Request, res: Response) {
 
   // SIGN TOKEN// PAYLOAD: { sub: user id, username, role  } // EXPIRED 24 hour // SECRET(random) ==> PUT IN .env
   const payload = { sub: user.id, username: user.username, role: user.role };
-  const secretKey = process.env.JWT_SECRET ?? 'qwertyuioplkjhgfdsazxcvbnm';
+  const secretKey = env.JWT_SECRET;
   const token = jwt.sign(payload, secretKey, { expiresIn: 24 * 60 * 60 });
 
   res.status(200).json({ token });

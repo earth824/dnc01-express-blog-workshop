@@ -8,6 +8,7 @@ export function validationErrorMiddleware(
   _res: Response,
   next: NextFunction
 ) {
+  console.log('+++++++++++++++++++++++++++++++++++++++++');
   if (err instanceof ZodError) {
     throw new ValidationException(z.flattenError(err));
     // return res
