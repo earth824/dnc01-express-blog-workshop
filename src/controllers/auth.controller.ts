@@ -4,6 +4,9 @@ import z from 'zod';
 import { PrismaClientKnownRequestError } from '../db/generated/prisma/internal/prismaNamespace.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { HttpException } from '../exceptions/http.exception.js';
+import { InvalidCredentialsException } from '../exceptions/invalid-credentials.exception.js';
+import { UsernameExistException } from '../exceptions/username-exist.exception.js';
 
 const registerSchema = z.object({
   username: z
@@ -43,7 +46,8 @@ async function register(req: Request, res: Response) {
     });
   } catch (err) {
     if (err instanceof PrismaClientKnownRequestError && err.code === 'P2002') {
-      return res.status(409).json({ message: 'username already in use' });
+      // return res.status(409).json({ message: 'username already in use' });
+      throw new UsernameExistException();
     }
     throw err;
   }
@@ -70,12 +74,15 @@ async function login(req: Request, res: Response) {
   }); // { id, username, password, role }
 
   if (!user) {
-    return res.status(401).json({ message: 'invalid username or password' });
+    // return res.status(401).json({ message: 'invalid username or password' });
+    throw new InvalidCredentialsException();
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    return res.status(401).json({ message: 'invalid username or password' });
+    // return res.status(401).json({ message: 'invalid username or password' });
+    // throw new HttpException('invalid username or password', 401);
+    throw new InvalidCredentialsException();
   }
 
   // SIGN TOKEN// PAYLOAD: { sub: user id, username, role  } // EXPIRED 24 hour // SECRET(random) ==> PUT IN .env

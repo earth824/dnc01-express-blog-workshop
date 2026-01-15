@@ -38,7 +38,7 @@ async function createBlog(req: Request, res: Response) {
     data: {
       content: data.content,
       status: data.status as boolean,
-      userId: Number(payload.sub)
+      userId: payload.sub as unknown as number
     }
   });
   // sent response: newly created blog

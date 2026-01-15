@@ -1,5 +1,8 @@
+import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
-import z, { ZodError } from 'zod';
+import jwt from 'jsonwebtoken';
+import { HttpException } from '../exceptions/http.exception.js';
+import { validationErrorMiddleware } from './errors/validation-error.middleware.js';
 
 export function errorMiddleware(
   err: unknown,
@@ -8,13 +11,27 @@ export function errorMiddleware(
   _next: NextFunction
 ) {
   console.log(err);
-  if (err instanceof ZodError) {
-    return res
-      .status(400)
-      .json({ message: 'validation error', details: z.flattenError(err) });
+
+  if (err instanceof jwt.JsonWebTokenError) {
+    return res.status(401).json({ message: err.message });
   }
 
-  res.status(500).json({
-    message: err instanceof Error ? err.message : 'unexpected error occured'
-  });
+  if (err instanceof jwt.TokenExpiredError) {
+    return res.status(401).json({ message: 'token has been expired' });
+  }
+
+  if (err instanceof HttpException) {
+    return res.status(err.statusCode).json({ message: err.message });
+  }
 }
+
+export const errorRouter = express.Router();
+errorRouter.use(validationErrorMiddleware);
+// errorRouter.use(jwtErrorMiddleware)
+errorRouter.use(
+  (err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    res.status(500).json({
+      message: err instanceof Error ? err.message : 'unexpected error occured'
+    });
+  }
+);
