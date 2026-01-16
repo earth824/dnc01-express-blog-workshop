@@ -72,10 +72,13 @@ async function deleteBlog(req: Request, res: Response) {
   // }
 }
 
+export function restrict(req: Request, res: Response) {}
+
 export const blogController = {
   getAllBlogs,
   getBlogById,
   createBlog,
   updateBlog,
-  deleteBlog
+  deleteBlog,
+  restrict
 };
